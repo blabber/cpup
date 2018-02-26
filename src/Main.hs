@@ -28,7 +28,7 @@ import System.FilePath ( (</>) )
 respectCase :: Bool
 respectCase = True
 
-data Flag = Verbose
+data Flag = Verbose | Force
   deriving (Eq)
 
 usage :: String
@@ -36,7 +36,9 @@ usage = usageInfo header options
   where header = "usage: cpup [OPTIONS] <srcdir> <tgtdir>"
 
 options :: [OptDescr Flag]
-options = [Option ['v'] ["verbose"] (NoArg Verbose) "verbose output"]
+options = [ Option ['v'] ["verbose"] (NoArg Verbose) "verbose output"
+          , Option ['f'] ["force"]   (NoArg Force)   "copy regardless of modification time"
+          ]
 
 parseOptions :: [String] -> IO ([Flag], [String])
 parseOptions argv =
@@ -51,7 +53,7 @@ main = do
   (flags, (src : tgt : _)) <- getArgs >>= parseOptions
   srcFiles <- listFiles src
   tgtFiles <- listFiles tgt
-  srcNewerFiles <- filterM (isSrcNewer src tgt) $ filterCandidates srcFiles tgtFiles
+  srcNewerFiles <- filterM (isSrcNewer flags src tgt) $ filterCandidates srcFiles tgtFiles
   mapM (copyFile' flags src tgt) srcNewerFiles
   putStrLn $ src ++ " -> " ++ tgt ++ ": " ++ (show $ length srcNewerFiles) ++ " file(s)"
 
@@ -67,8 +69,10 @@ filterCandidates a b
   | respectCase = intersect a b
   | otherwise   = intersectBy (\x y -> y == map toUpper x) a $ map (map toUpper) b
 
-isSrcNewer :: FilePath -> FilePath -> FilePath -> IO Bool
-isSrcNewer s t f = do
+isSrcNewer :: [Flag] -> FilePath -> FilePath -> FilePath -> IO Bool
+isSrcNewer flags s t f
+  | Force `elem` flags = return (True)
+isSrcNewer flags s t f = do
   srcFileTime <- getModificationTime $ s </> f
   tgtFileTime <- getModificationTime $ t </> f
   return $ srcFileTime > tgtFileTime
