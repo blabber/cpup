@@ -28,22 +28,22 @@ import System.FilePath ( (</>) )
 respectCase :: Bool
 respectCase = True
 
-data Flag = Verbose | SrcDir FilePath | TgtDir FilePath
-  deriving (Show, Eq)
+data Flag = Verbose
+  deriving (Eq)
 
 usage :: String
 usage = usageInfo header options
   where header = "usage: cpup [OPTIONS] <srcdir> <tgtdir>"
 
 options :: [OptDescr Flag]
-options = [Option ['v'] ["verbose"]  (NoArg Verbose) "verbose output"]  
+options = [Option ['v'] ["verbose"] (NoArg Verbose) "verbose output"]
 
 parseOptions :: [String] -> IO ([Flag], [String])
 parseOptions argv =
   case getOpt Permute options argv of
     (o, n, []) -> if length n /= 2
-                       then die usage
-                       else return (o, n)
+                    then die usage
+                    else return (o, n)
     (_, _, e)  -> die usage
 
 main :: IO ()
@@ -61,9 +61,9 @@ listFiles d = do
   filterM doesFileExist' l
   where
     doesFileExist' l = doesFileExist $ d </> l
-      
+
 filterCandidates :: [FilePath] -> [FilePath] -> [FilePath]
-filterCandidates a b 
+filterCandidates a b
   | respectCase = intersect a b
   | otherwise   = intersectBy (\x y -> y == map toUpper x) a $ map (map toUpper) b
 
@@ -74,8 +74,8 @@ isSrcNewer s t f = do
   return $ srcFileTime > tgtFileTime
 
 copyFile' :: [Flag] -> FilePath -> FilePath -> FilePath -> IO ()
-copyFile' flags s t f  = do 
+copyFile' flags s t f = do
   let srcFile = s </> f
       tgtFile = t </> f
-  when (Verbose `elem` flags) $  putStrLn $ srcFile ++ " -> " ++ tgtFile
+  when (Verbose `elem` flags) $ putStrLn $ srcFile ++ " -> " ++ tgtFile
   copyFile srcFile tgtFile
