@@ -1,6 +1,9 @@
 -- vim: et:ts=2:sw=2
 module Main where
 
+import Control.Exception ( IOException
+                         , catch
+                         )
 import Control.Monad ( filterM
                      , mapM_
                      , when
@@ -24,6 +27,7 @@ import System.Directory ( copyFile
 import System.Environment ( getArgs )
 import System.Exit ( die )
 import System.FilePath ( (</>) )
+import System.IO.Error ( ioeGetErrorString )
 
 respectCase :: Bool
 respectCase = True
@@ -82,4 +86,7 @@ copyFile' flags s t f = do
   let srcFile = s </> f
       tgtFile = t </> f
   when (Verbose `elem` flags) $ putStrLn $ srcFile ++ " -> " ++ tgtFile
-  copyFile srcFile tgtFile
+  catch (copyFile srcFile tgtFile)
+        (\ e -> do let err = e :: IOException
+                       d   = ioeGetErrorString err
+                   putStrLn ("Could not copy file \"" ++ f ++ "\": " ++ d))
