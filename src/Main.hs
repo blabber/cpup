@@ -2,7 +2,7 @@
 module Main where
 
 import Control.Monad ( filterM
-                     , mapM
+                     , mapM_
                      , when
                      )
 import Data.Char ( toUpper )
@@ -54,7 +54,7 @@ main = do
   srcFiles <- listFiles src
   tgtFiles <- listFiles tgt
   srcNewerFiles <- filterM (isSrcNewer flags src tgt) $ filterCandidates srcFiles tgtFiles
-  mapM (copyFile' flags src tgt) srcNewerFiles
+  mapM_ (copyFile' flags src tgt) srcNewerFiles
   putStrLn $ src ++ " -> " ++ tgt ++ ": " ++ (show $ length srcNewerFiles) ++ " file(s)"
 
 listFiles :: FilePath -> IO [FilePath]
