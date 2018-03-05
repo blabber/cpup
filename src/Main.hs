@@ -1,33 +1,16 @@
 -- vim: et:ts=2:sw=2
 module Main where
 
-import Control.Exception ( IOException
-                         , catch
-                         )
-import Control.Monad ( filterM
-                     , mapM_
-                     , when
-                     )
-import Data.Char ( toUpper )
-import Data.List ( intersect
-                 , intersectBy
-                 )
-import System.Console.GetOpt ( ArgDescr( NoArg )
-                             , ArgOrder( Permute )
-                             , OptDescr
-                             , OptDescr( Option )
-                             , getOpt
-                             , usageInfo
-                             )
-import System.Directory ( copyFile
-                        , doesFileExist
-                        , getModificationTime
-                        , listDirectory
-                        )
-import System.Environment ( getArgs )
-import System.Exit ( die )
-import System.FilePath ( (</>) )
-import System.IO.Error ( ioeGetErrorString )
+import Control.Exception
+import Control.Monad
+import Data.Char
+import Data.List
+import System.Console.GetOpt
+import System.Directory
+import System.Environment
+import System.Exit
+import System.FilePath
+import System.IO.Error
 
 respectCase :: Bool
 respectCase = True
@@ -89,4 +72,4 @@ copyFile' flags s t f = do
   catch (copyFile srcFile tgtFile)
         (\ e -> do let err = e :: IOException
                        d   = ioeGetErrorString err
-                   putStrLn ("Could not copy file \"" ++ f ++ "\": " ++ d))
+                   putStrLn $ "Could not copy file \"" ++ f ++ "\": " ++ d)
